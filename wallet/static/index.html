@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محفظتي</title>
+<style>
+:root{--p:#0b6e4f;--p2:#08a06f;--bg:#f2f5f4;--card:#fff;--tx:#1b2a26;--mut:#6b7b76;--red:#d64545;--grn:#1a9d63}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1715;--card:#18231f;--tx:#e6f0ec;--mut:#8aa098}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--tx)}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 16px 90px}
+header{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;margin:0 -16px;padding:24px 20px 56px;border-radius:0 0 28px 28px}
+header .hi{opacity:.85;font-size:14px;display:flex;justify-content:space-between}
+header .bal{font-size:38px;font-weight:700;margin-top:8px}
+header .bal small{font-size:16px;font-weight:400;opacity:.85}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:-34px}
+.act{background:var(--card);border:0;border-radius:16px;padding:14px 4px;color:var(--tx);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 2px 8px #0001}
+.act span{display:block;font-size:24px;margin-bottom:4px}
+h3{margin:24px 4px 10px}
+.card{background:var(--card);border-radius:16px;padding:6px 14px}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #8881}
+.tx:last-child{border:0}
+.ic{width:40px;height:40px;border-radius:50%;background:#8881;display:grid;place-items:center;font-size:18px}
+.tx .t{flex:1}.tx .t b{display:block;font-size:14px}.tx .t small{color:var(--mut);font-size:12px}
+.pos{color:var(--grn);font-weight:700}.neg{color:var(--red);font-weight:700}
+.empty{text-align:center;color:var(--mut);padding:24px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:9}
+.modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px}
+.sheet h2{margin:0 0 14px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;padding:13px;border:1px solid #8884;border-radius:12px;font:inherit;background:var(--bg);color:var(--tx)}
+button.main{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--p);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button.link{background:none;border:0;color:var(--p2);font:inherit;cursor:pointer;margin-top:10px;width:100%}
+.err{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
+.auth{padding-top:60px}.auth h1{color:var(--p2);text-align:center}
+.out{background:none;border:0;color:#fff;font:inherit;cursor:pointer;opacity:.85;padding:0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:20px;display:none;z-index:99}
+</style>
+</head>
+<body>
+<div class="app" id="auth" hidden>
+  <div class="auth">
+    <h1>💳 محفظتي</h1>
+    <form id="authForm">
+      <div id="nameRow" hidden><label>الاسم</label><input id="name" autocomplete="name"></div>
+      <label>رقم الهاتف</label><input id="phone" inputmode="numeric" autocomplete="tel" required>
+      <label>الرمز السري (4 أرقام)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" required>
+      <div class="err" id="authErr"></div>
+      <button class="main" id="authBtn">دخول</button>
+      <button type="button" class="link" id="toggle">ليس لديك حساب؟ سجّل الآن</button>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="home" hidden>
+  <header>
+    <div class="hi"><span id="uname"></span><button class="out" id="logout">خروج</button></div>
+    <div class="bal"><span id="bal">0</span> <small>ر.ي</small></div>
+  </header>
+  <div class="actions">
+    <button class="act" data-a="deposit"><span>➕</span>إيداع</button>
+    <button class="act" data-a="withdraw"><span>➖</span>سحب</button>
+    <button class="act" data-a="transfer"><span>📤</span>تحويل</button>
+    <button class="act" data-a="topup"><span>📱</span>شحن</button>
+    <button class="act" data-a="bill"><span>🧾</span>فواتير</button>
+  </div>
+  <h3>آخر العمليات</h3>
+  <div class="card" id="list"></div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><h2 id="mt"></h2><form id="mf"></form><div class="err" id="merr"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let token=localStorage.getItem('tk'), registering=false, providers=null;
+const KIND={deposit:['➕','إيداع',1],withdraw:['➖','سحب',-1],transfer_in:['📥','تحويل وارد',1],transfer_out:['📤','تحويل صادر',-1],bill:['🧾','فاتورة',-1],topup:['📱','شحن رصيد',-1]};
+const fmt=n=>Number(n).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+async function api(path,body){
+  const r=await fetch('/api/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){ if(r.status===401&&token&&path!=='login'){logout(true)}
+    throw new Error(typeof j.detail==='string'?j.detail:'بيانات غير صالحة');}
+  return j;
+}
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+function logout(silent){token=null;localStorage.removeItem('tk');if(!silent)api('logout',{}).catch(()=>{});show()}
+function show(){$('auth').hidden=!!token;$('home').hidden=!token;if(token)load()}
+
+$('toggle').onclick=()=>{registering=!registering;$('nameRow').hidden=!registering;$('authBtn').textContent=registering?'إنشاء حساب':'دخول';$('toggle').textContent=registering?'لديك حساب؟ سجّل الدخول':'ليس لديك حساب؟ سجّل الآن';$('authErr').textContent=''};
+$('authForm').onsubmit=async e=>{e.preventDefault();$('authErr').textContent='';
+  try{
+    const phone=$('phone').value.trim(),pin=$('pin').value;
+    if(registering)await api('register',{name:$('name').value,phone,pin});
+    token=(await api('login',{phone,pin})).token;localStorage.setItem('tk',token);$('pin').value='';show();
+  }catch(x){$('authErr').textContent=x.message}};
+$('logout').onclick=()=>logout();
+
+async function load(){
+  try{
+    const [me,txs]=await Promise.all([api('me'),api('transactions')]);
+    $('uname').textContent='أهلاً '+me.name+' · '+me.phone;$('bal').textContent=fmt(me.balance);
+    $('list').innerHTML=txs.length?txs.map(t=>{const k=KIND[t.kind];return `<div class="tx"><div class="ic">${k[0]}</div><div class="t"><b>${k[1]}${t.note&&t.kind!=='deposit'&&t.kind!=='withdraw'?' · '+esc(t.note):''}</b><small>${esc(t.counterparty||'')} ${t.created_at}</small></div><div class="${k[2]>0?'pos':'neg'}">${k[2]>0?'+':'-'}${fmt(t.amount)}</div></div>`}).join(''):'<div class="empty">لا توجد عمليات بعد</div>';
+  }catch(x){}
+}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const F={
+  deposit:{t:'إيداع',f:[['amount','المبلغ','number']],path:'deposit'},
+  withdraw:{t:'سحب',f:[['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'withdraw'},
+  transfer:{t:'تحويل',f:[['to_phone','رقم المستلم','tel'],['amount','المبلغ','number'],['note','ملاحظة (اختياري)','text'],['pin','الرمز السري','password']],path:'transfer'},
+  topup:{t:'شحن رصيد',f:[['provider','الشركة','select','topup'],['phone','رقم الهاتف','tel'],['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'topup'},
+  bill:{t:'دفع فاتورة',f:[['provider','نوع الفاتورة','select','bills'],['reference','رقم الاشتراك','text'],['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'bills'}
+};
+document.querySelectorAll('.act').forEach(b=>b.onclick=async()=>{
+  const d=F[b.dataset.a];if(!providers)providers=await api('providers');
+  $('mt').textContent=d.t;$('merr').textContent='';
+  $('mf').innerHTML=d.f.map(([n,l,ty,src])=>`<label>${l}</label>`+(ty==='select'?`<select name="${n}">${Object.entries(providers[src]).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>`:`<input name="${n}" type="${ty}" ${n==='pin'?'maxlength="4" inputmode="numeric"':''} ${ty==='number'?'step="0.01" min="0.01"':''} ${n==='note'?'':'required'}>`)).join('')+'<button class="main">تأكيد</button><button type="button" class="link" id="cancel">إلغاء</button>';
+  $('cancel').onclick=()=>$('modal').classList.remove('on');
+  $('mf').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries(new FormData($('mf')));
+    if(o.amount!==undefined)o.amount=parseFloat(o.amount);
+    try{await api(d.path,o);$('modal').classList.remove('on');toast('تمت العملية بنجاح ✓');load()}catch(x){$('merr').textContent=x.message}};
+  $('modal').classList.add('on');
+});
+$('modal').onclick=e=>{if(e.target===$('modal'))$('modal').classList.remove('on')};
+show();
+</script>
+</body>
+</html>
