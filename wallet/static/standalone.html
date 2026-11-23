@@ -1,0 +1,242 @@
+<title>محفظتي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--p:#0b6e4f;--p2:#08a06f;--bg:#f2f5f4;--card:#fff;--tx:#1b2a26;--mut:#6b7b76;--red:#d64545;--grn:#1a9d63;--ov:#0008;--line:#8881}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1715;--card:#18231f;--tx:#e6f0ec;--mut:#8aa098;--grn:#4cd08f;--red:#ff7a7a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1715;--card:#18231f;--tx:#e6f0ec;--mut:#8aa098;--grn:#4cd08f;--red:#ff7a7a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--tx)}
+.app{max-width:480px;margin:0 auto;min-height:100vh;padding-block:0 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{margin-top:calc(-1*env(safe-area-inset-top,0px))!important;padding-top:calc(env(safe-area-inset-top,0px) + 24px)!important;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:24px 20px 56px;border-radius:0 0 28px 28px}
+header .hi{opacity:.85;font-size:14px;display:flex;justify-content:space-between}
+header .bal{font-size:38px;font-weight:700;margin-top:8px}
+header .bal small{font-size:16px;font-weight:400;opacity:.85}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:-34px}
+.act{background:var(--card);border:0;border-radius:16px;padding:14px 4px;color:var(--tx);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 2px 8px #0001}
+.act span{display:block;font-size:24px;margin-bottom:4px}
+h3{margin:24px 4px 10px}
+.card{background:var(--card);border-radius:16px;padding:6px 14px}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #8881}
+.tx:last-child{border:0}
+.ic{width:40px;height:40px;border-radius:50%;background:#8881;display:grid;place-items:center;font-size:18px}
+.tx .t{flex:1}.tx .t b{display:block;font-size:14px}.tx .t small{color:var(--mut);font-size:12px}
+.pos{color:var(--grn);font-weight:700}.neg{color:var(--red);font-weight:700}
+.empty{text-align:center;color:var(--mut);padding:24px}
+.modal{position:fixed;inset:0;background:var(--ov);display:none;align-items:flex-end;justify-content:center;z-index:9}
+.modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px}
+.sheet h2{margin:0 0 14px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;padding:13px;border:1px solid #8884;border-radius:12px;font:inherit;background:var(--bg);color:var(--tx)}
+button.main{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:var(--p);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button.link{background:none;border:0;color:var(--p2);font:inherit;cursor:pointer;margin-top:10px;width:100%}
+.err{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
+.auth{padding-top:60px}.auth h1{color:var(--p2);text-align:center}
+.out{background:none;border:0;color:#fff;font:inherit;cursor:pointer;opacity:.85;padding:0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:20px;display:none;z-index:99}
+.note{color:var(--mut);font-size:12px;text-align:center;margin-top:20px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--p2);outline-offset:2px}
+.chips{display:flex;gap:8px;margin:0 0 10px}.chip{border:0;border-radius:20px;padding:7px 14px;background:var(--card);color:var(--mut);font:inherit;font-size:13px;cursor:pointer}.chip.on{background:var(--p);color:#fff}
+.req{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.req:last-child{border:0}.req .t{flex:1;font-size:14px}.req small{color:var(--mut);display:block}
+.mini{border:0;border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer;background:var(--p);color:#fff}.mini.g{background:var(--line);color:var(--tx)}
+.tx{cursor:pointer}.rc{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.rc span:first-child{color:var(--mut)}
+.actions{grid-template-columns:repeat(4,1fr)}.actions .act{min-width:0}
+.sub{margin-top:6px;font-size:12px;opacity:.9}.sub select{width:auto;padding:3px 6px;border-radius:8px;background:#fff3;color:#fff;border:0;font-size:12px}.sub option{color:#000}
+.wals{display:flex;gap:10px;overflow-x:auto;padding:2px 0 8px}.wal{flex:0 0 130px;border:2px solid transparent;border-radius:14px;padding:12px;background:var(--card);color:var(--tx);font:inherit;text-align:start;cursor:pointer}
+.wal.on{border-color:var(--p2)}.wal small{color:var(--mut);display:block}.wal b{font-size:17px;display:block;margin-top:4px}
+.rate{font-size:12px;color:var(--mut);margin-top:8px;min-height:18px}
+</style>
+<div class="app" id="auth" hidden>
+  <div class="auth">
+    <h1>💳 محفظتي</h1>
+    <form id="authForm">
+      <div id="nameRow" hidden><label>الاسم</label><input id="name" autocomplete="name"></div>
+      <label>رقم الهاتف</label><input id="phone" inputmode="numeric" autocomplete="tel" required>
+      <label>الرمز السري (4 أرقام)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" required>
+      <div class="err" id="authErr"></div>
+      <button class="main" id="authBtn">دخول</button>
+      <button type="button" class="link" id="toggle">ليس لديك حساب؟ سجّل الآن</button>
+    </form>
+    <p class="note">نسخة تجريبية: البيانات محفوظة على هذا الجهاز فقط، والتحويل يعمل بين الحسابات المسجلة هنا. لا أموال حقيقية.</p>
+  </div>
+</div>
+
+<div class="app" id="home" hidden>
+  <header>
+    <div class="hi"><span id="uname"></span><button class="out" id="logout">خروج</button></div>
+    <div class="bal"><span id="bal">0</span> <small id="dcur">USD</small></div>
+    <div class="sub">إجمالي رصيدك بعملة العرض · <select id="dsel" aria-label="عملة العرض"></select></div>
+  </header>
+  <div class="actions">
+    <button class="act" data-a="deposit"><span>➕</span>إيداع</button>
+    <button class="act" data-a="withdraw"><span>➖</span>سحب</button>
+    <button class="act" data-a="transfer"><span>📤</span>تحويل</button>
+    <button class="act" data-a="topup"><span>📱</span>شحن</button>
+    <button class="act" data-a="bill"><span>🧾</span>فواتير</button>
+    <button class="act" data-a="request"><span>📥</span>طلب مبلغ</button>
+    <button class="act" data-a="contacts"><span>👥</span>المستفيدون</button>
+    <button class="act" data-a="exchange"><span>🌍</span>صرف عملة</button>
+    <button class="act" data-a="settings"><span>⚙️</span>الإعدادات</button>
+  </div>
+  <h3>محافظي بالعملات</h3>
+  <div class="wals" id="wals"></div>
+  <div id="reqBox" hidden><h3>طلبات واردة</h3><div class="card" id="reqs"></div></div>
+  <h3>آخر العمليات</h3>
+  <div class="chips" id="chips"><button class="chip on" data-f="all">الكل</button><button class="chip" data-f="in">وارد</button><button class="chip" data-f="out">صادر</button></div>
+  <div class="card" id="list"></div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><h2 id="mt"></h2><form id="mf"></form><div class="err" id="merr"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let token=null, registering=false, providers=null;
+const KIND={deposit:['➕','إيداع',1],withdraw:['➖','سحب',-1],transfer_in:['📥','تحويل وارد',1],transfer_out:['📤','تحويل صادر',-1],bill:['🧾','فاتورة',-1],exchange_out:['🔄','صرف عملة',-1],exchange_in:['🔄','صرف عملة',1],topup:['📱','شحن رصيد',-1]};
+const CUR={USD:['دولار أمريكي','$',1],EUR:['يورو','€',0.92],GBP:['جنيه إسترليني','£',0.79],SAR:['ريال سعودي','SAR',3.75],AED:['درهم إماراتي','AED',3.6725],YER:['ريال يمني','YER',250],EGP:['جنيه مصري','EGP',48.5],TRY:['ليرة تركية','TRY',34]};
+let ACTIVE='USD';
+const cname=Object.fromEntries(Object.entries(CUR).map(([k,v])=>[k,k+' · '+v[0]]));
+const conv=(a,f,t)=>a/CUR[f][2]*CUR[t][2];
+const fmt=n=>Number(n).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+
+const KEY='wallet_demo_v1';
+const load0=()=>{let d;try{d=JSON.parse(localStorage.getItem(KEY))||{users:{},session:null}}catch(e){d={users:{},session:null}}
+  for(const u of Object.values(d.users)){if(!u.balances){u.balances={YER:u.balance||0};delete u.balance}for(const t of u.txs)t.cur=t.cur||'YER'}return d};
+let DB=load0();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
+const BILLS={electricity:'الكهرباء',water:'المياه',internet:'الإنترنت'};
+const TOPUPS={yemenmobile:'يمن موبايل',sabafon:'سبأفون',you:'واي',y:'يو'};
+const fail=m=>{throw new Error(m)};
+const toMinor=a=>{const n=Math.round(Number(a)*100);if(!(n>0)||n>1e9||Math.abs(Number(a)*100-n)>1e-6)fail('مبلغ غير صالح');return n};
+const now=()=>new Date().toISOString().slice(0,16).replace('T',' ');
+async function h(pin){if(!(window.crypto&&crypto.subtle)){let x=5381;for(const c of 'w:'+pin)x=((x*33)^c.charCodeAt(0))>>>0;return 'f'+x}const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('w:'+pin));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const me0=()=>DB.users[DB.session]||fail('الجلسة منتهية');
+async function needPin(u,pin){if(await h(pin)!==u.pin)fail('الرمز السري غير صحيح')}
+function rec(u,kind,amt,cp,note,c){u.txs.unshift({id:Date.now()+Math.random(),kind,cur:c,amount:amt/100,counterparty:cp||'',note:note||'',balance_after:(u.balances[c]||0)/100,created_at:now()})}
+const cur=b=>CUR[b.cur]?b.cur:fail('عملة غير مدعومة');
+function spend(u,amt,c){if((u.balances[c]||0)<amt)fail('الرصيد غير كافٍ');u.balances[c]-=amt}
+function add(u,amt,c){u.balances[c]=(u.balances[c]||0)+amt}
+async function api(path,b){
+  if(path==='providers')return {bills:BILLS,topup:TOPUPS,cur:cname};
+  if(path==='register'){
+    if(!/^\d{9,15}$/.test(b.phone))fail('رقم الهاتف غير صالح');
+    if(!/^\d{4}$/.test(b.pin))fail('الرمز السري 4 أرقام');
+    if((b.name||'').trim().length<2)fail('الاسم قصير');
+    if(DB.users[b.phone])fail('الرقم مسجل مسبقاً');
+    DB.users[b.phone]={name:b.name.trim(),phone:b.phone,pin:await h(b.pin),balances:{},txs:[]};save();return {ok:true}}
+  if(path==='login'){const u=DB.users[b.phone];if(!u||u.pin!==await h(b.pin))fail('رقم الهاتف أو الرمز غير صحيح');DB.session=b.phone;save();return {token:'local'}}
+  if(path==='logout'){DB.session=null;save();return {ok:true}}
+  const u=me0();
+  if(path==='me')return {name:u.name,phone:u.phone,balances:Object.fromEntries(Object.entries(u.balances).map(([k,v])=>[k,v/100]))};
+  if(path==='transactions')return u.txs.slice(0,50);
+  u.contacts=u.contacts||[];u.reqs=u.reqs||[];
+  if(path==='contacts')return u.contacts;
+  if(path==='contact_add'){if(!/^\d{9,15}$/.test(b.phone))fail('رقم الهاتف غير صالح');if((b.name||'').trim().length<2)fail('الاسم قصير');if(u.contacts.some(c=>c.phone===b.phone))fail('المستفيد موجود');u.contacts.push({name:b.name.trim(),phone:b.phone});save();return {ok:true}}
+  if(path==='contact_del'){u.contacts=u.contacts.filter(c=>c.phone!==b.phone);save();return {ok:true}}
+  if(path==='change_pin'){await needPin(u,b.old);if(!/^\d{4}$/.test(b.new))fail('الرمز الجديد 4 أرقام');u.pin=await h(b.new);save();return {ok:true}}
+  if(path==='req_list')return u.reqs.filter(r=>r.status==='pending');
+  if(path==='req_decline'){u.reqs=u.reqs.filter(r=>r.id!==b.id);save();return {ok:true}}
+  if(path==='req_pay'){await needPin(u,b.pin);const r=u.reqs.find(r=>r.id===b.id&&r.status==='pending')||fail('الطلب غير موجود');const t=DB.users[r.from];const a=Math.round(r.amount*100);spend(u,a,r.cur);if(t){add(t,a,r.cur);rec(t,'transfer_in',a,u.phone,r.note||'سداد طلب',r.cur)}rec(u,'transfer_out',a,r.from,r.note||'سداد طلب',r.cur);u.reqs=u.reqs.filter(x=>x.id!==r.id);save();return {ok:true}}
+  if(path==='req_create'){const t=DB.users[b.to_phone]||fail('المستخدم غير موجود (يجب أن يكون مسجلاً على هذا الجهاز)');if(b.to_phone===u.phone)fail('لا يمكن الطلب من نفسك');const a=toMinor(b.amount),c=cur(b);t.reqs=t.reqs||[];t.reqs.push({id:String(Date.now()),from:u.phone,fromName:u.name,cur:c,amount:a/100,note:b.note||'',status:'pending'});save();return {ok:true}}
+  if(path==='exchange'){await needPin(u,b.pin);const f=cur({cur:b.from}),t=cur({cur:b.to});if(f===t)fail('اختر عملتين مختلفتين');const a=toMinor(b.amount);const out=Math.round(conv(a/100,f,t)*100);if(out<1)fail('المبلغ صغير جداً');spend(u,a,f);add(u,out,t);rec(u,'exchange_out',a,'',f+' → '+t,f);rec(u,'exchange_in',out,'',f+' → '+t,t);save();return {ok:true}}
+  const amt=toMinor(b.amount),C=cur(b);
+  if(path==='deposit'){add(u,amt,C);rec(u,'deposit',amt,'','إيداع',C)}
+  else{
+    await needPin(u,b.pin);
+    if(path==='withdraw'){spend(u,amt,C);rec(u,'withdraw',amt,'','سحب',C)}
+    else if(path==='transfer'){
+      if(b.to_phone===u.phone)fail('لا يمكن التحويل لنفسك');
+      const t=DB.users[b.to_phone]||fail('المستلم غير موجود (يجب أن يكون مسجلاً على هذا الجهاز)');
+      spend(u,amt,C);add(t,amt,C);rec(u,'transfer_out',amt,b.to_phone,b.note,C);rec(t,'transfer_in',amt,u.phone,b.note,C)}
+    else if(path==='bills'){if(!BILLS[b.provider])fail('مزود غير معروف');if((b.reference||'').length<3)fail('رقم الاشتراك قصير');spend(u,amt,C);rec(u,'bill',amt,b.reference,BILLS[b.provider],C)}
+    else if(path==='topup'){if(!TOPUPS[b.provider])fail('مزود غير معروف');if(!/^\d{9,15}$/.test(b.phone))fail('رقم الهاتف غير صالح');spend(u,amt,C);rec(u,'topup',amt,b.phone,TOPUPS[b.provider],C)}
+  }
+  save();return {ok:true}
+}
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+function logout(silent){token=null;if(!silent)api('logout',{}).catch(()=>{});show()}
+function show(){$('auth').hidden=!!token;$('home').hidden=!token;if(token)load()}
+
+$('toggle').onclick=()=>{registering=!registering;$('nameRow').hidden=!registering;$('authBtn').textContent=registering?'إنشاء حساب':'دخول';$('toggle').textContent=registering?'لديك حساب؟ سجّل الدخول':'ليس لديك حساب؟ سجّل الآن';$('authErr').textContent=''};
+$('authForm').onsubmit=async e=>{e.preventDefault();$('authErr').textContent='';
+  try{
+    const phone=$('phone').value.trim(),pin=$('pin').value;
+    if(registering)await api('register',{name:$('name').value,phone,pin});
+    token=(await api('login',{phone,pin})).token;$('pin').value='';show();
+  }catch(x){$('authErr').textContent=x.message}};
+$('logout').onclick=()=>logout();
+
+let ALL=[],FILT='all';
+function renderList(){
+  const L=ALL.filter(t=>FILT==='all'||(FILT==='in'?KIND[t.kind][2]>0:KIND[t.kind][2]<0));
+  $('list').innerHTML=L.length?L.map(t=>{const k=KIND[t.kind];return `<div class="tx" data-id="${t.id}"><div class="ic">${k[0]}</div><div class="t"><b>${k[1]}${t.note&&t.kind!=='deposit'&&t.kind!=='withdraw'?' · '+esc(t.note):''}</b><small>${esc(t.counterparty||'')} ${t.created_at}</small></div><div class="${k[2]>0?'pos':'neg'}">${k[2]>0?'+':'-'}${fmt(t.amount)} <small>${t.cur||''}</small></div></div>`}).join(''):'<div class="empty">لا توجد عمليات</div>';
+  $('list').querySelectorAll('.tx').forEach(el=>el.onclick=()=>receipt(ALL.find(t=>String(t.id)===el.dataset.id)));
+}
+function sheet(title,html){$('mt').textContent=title;$('merr').textContent='';$('mf').onsubmit=e=>e.preventDefault();$('mf').innerHTML=html;$('modal').classList.add('on')}
+function receipt(t){const k=KIND[t.kind];
+  sheet('إيصال العملية',`<div class="rc"><span>النوع</span><b>${k[1]}</b></div><div class="rc"><span>المبلغ</span><b class="${k[2]>0?'pos':'neg'}">${fmt(t.amount)} ${t.cur||''}</b></div>${t.counterparty?`<div class="rc"><span>الطرف الآخر</span><b>${esc(t.counterparty)}</b></div>`:''}${t.note?`<div class="rc"><span>ملاحظة</span><b>${esc(t.note)}</b></div>`:''}<div class="rc"><span>الرصيد بعدها</span><b>${fmt(t.balance_after)}</b></div><div class="rc"><span>التاريخ</span><b>${t.created_at}</b></div><div class="rc"><span>رقم العملية</span><b>${String(t.id).replace('.','').slice(-10)}</b></div><button type="button" class="main" id="cl">إغلاق</button>`);
+  $('cl').onclick=()=>$('modal').classList.remove('on')}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{FILT=c.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));renderList()});
+async function load(){
+  try{
+    const [me,txs,rq]=await Promise.all([api('me'),api('transactions'),api('req_list')]);
+    $('uname').textContent='أهلاً '+me.name+' · '+me.phone;const D=$('dsel').value||'USD';if(!$('dsel').options.length){$('dsel').innerHTML=Object.keys(CUR).map(c=>`<option>${c}</option>`).join('');$('dsel').value='USD';$('dsel').onchange=load}
+    const dc=$('dsel').value;let tot=0;for(const[c,v]of Object.entries(me.balances))tot+=conv(v,c,dc);
+    $('bal').textContent=fmt(tot);$('dcur').textContent=dc;
+    const show=Object.keys(CUR).filter(c=>(me.balances[c]||0)>0||c===ACTIVE||c==='USD');
+    $('wals').innerHTML=show.map(c=>`<button class="wal ${c===ACTIVE?'on':''}" data-c="${c}"><small>${CUR[c][0]}</small><b>${fmt(me.balances[c]||0)} ${CUR[c][1]}</b></button>`).join('');
+    $('wals').querySelectorAll('.wal').forEach(w=>w.onclick=()=>{ACTIVE=w.dataset.c;load()});
+    ALL=txs;renderList();
+    $('reqBox').hidden=!rq.length;
+    $('reqs').innerHTML=rq.map(r=>`<div class="req"><div class="t"><b>${esc(r.fromName)}</b> يطلب <b>${fmt(r.amount)} ${r.cur||''}</b><small>${esc(r.note)} ${esc(r.from)}</small></div><button class="mini" data-pay="${r.id}">دفع</button><button class="mini g" data-no="${r.id}">رفض</button></div>`).join('');
+    $('reqs').querySelectorAll('[data-no]').forEach(b=>b.onclick=async()=>{await api('req_decline',{id:b.dataset.no});load()});
+    $('reqs').querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>{
+      const r=rq.find(x=>x.id===b.dataset.pay);
+      sheet('دفع الطلب',`<div class="rc"><span>إلى</span><b>${esc(r.fromName)}</b></div><div class="rc"><span>المبلغ</span><b>${fmt(r.amount)} ${r.cur||""}</b></div><label>الرمز السري</label><input name="pin" type="password" inputmode="numeric" maxlength="4" required><button class="main">تأكيد الدفع</button><button type="button" class="link" id="cl">إلغاء</button>`);
+      $('cl').onclick=()=>$('modal').classList.remove('on');
+      $('mf').onsubmit=async e=>{e.preventDefault();try{await api('req_pay',{id:r.id,pin:$('mf').pin.value});$('modal').classList.remove('on');toast('تم الدفع ✓');load()}catch(x){$('merr').textContent=x.message}}});
+  }catch(x){}
+}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const F={
+  deposit:{t:'إيداع',f:[['amount','المبلغ','number']],path:'deposit'},
+  withdraw:{t:'سحب',f:[['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'withdraw'},
+  transfer:{t:'تحويل',f:[['to_phone','رقم المستلم','tel'],['amount','المبلغ','number'],['note','ملاحظة (اختياري)','text'],['pin','الرمز السري','password']],path:'transfer'},
+  topup:{t:'شحن رصيد',f:[['provider','الشركة','select','topup'],['phone','رقم الهاتف','tel'],['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'topup'},
+  request:{t:'طلب مبلغ',f:[['to_phone','رقم الشخص','tel'],['amount','المبلغ','number'],['note','ملاحظة (اختياري)','text']],path:'req_create'},
+  exchange:{t:'صرف عملة',f:[['from','من عملة','select','cur'],['to','إلى عملة','select','cur'],['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'exchange'},
+  bill:{t:'دفع فاتورة',f:[['provider','نوع الفاتورة','select','bills'],['reference','رقم الاشتراك','text'],['amount','المبلغ','number'],['pin','الرمز السري','password']],path:'bills'}
+};
+async function contactsSheet(){
+  const cs=await api('contacts');
+  sheet('المستفيدون',(cs.length?cs.map(c=>`<div class="req"><div class="t"><b>${esc(c.name)}</b><small>${esc(c.phone)}</small></div><button type="button" class="mini g" data-del="${esc(c.phone)}">حذف</button></div>`).join(''):'<div class="empty">لا يوجد مستفيدون محفوظون</div>')+'<label>الاسم</label><input name="name" required><label>رقم الهاتف</label><input name="phone" type="tel" inputmode="numeric" required><button class="main">إضافة مستفيد</button><button type="button" class="link" id="cl">إغلاق</button>');
+  $('cl').onclick=()=>$('modal').classList.remove('on');
+  $('mf').querySelectorAll('[data-del]').forEach(x=>x.onclick=async()=>{await api('contact_del',{phone:x.dataset.del});contactsSheet()});
+  $('mf').onsubmit=async e=>{e.preventDefault();try{await api('contact_add',{name:$('mf').name.value,phone:$('mf').phone.value});contactsSheet()}catch(x){$('merr').textContent=x.message}}}
+function settingsSheet(){
+  sheet('الإعدادات','<label>الرمز الحالي</label><input name="old" type="password" inputmode="numeric" maxlength="4" required><label>الرمز الجديد (4 أرقام)</label><input name="nw" type="password" inputmode="numeric" maxlength="4" required><button class="main">تغيير الرمز السري</button><button type="button" class="link" id="cl">إغلاق</button>');
+  $('cl').onclick=()=>$('modal').classList.remove('on');
+  $('mf').onsubmit=async e=>{e.preventDefault();try{await api('change_pin',{old:$('mf').old.value,new:$('mf').nw.value});$('modal').classList.remove('on');toast('تم تغيير الرمز ✓')}catch(x){$('merr').textContent=x.message}}}
+document.querySelectorAll('.act').forEach(b=>b.onclick=async()=>{
+  if(b.dataset.a==='contacts')return contactsSheet();
+  if(b.dataset.a==='settings')return settingsSheet();
+  const d=F[b.dataset.a];if(!providers)providers=await api('providers');if(d.f.some(x=>x[0]==='amount')&&!d.f.some(x=>x[0]==='cur')&&b.dataset.a!=='exchange')d.f=[['cur','العملة','select','cur'],...d.f];
+  $('mt').textContent=d.t;$('merr').textContent='';
+  $('mf').innerHTML=d.f.map(([n,l,ty,src])=>`<label>${l}</label>`+(ty==='select'?`<select name="${n}">${Object.entries(providers[src]).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>`:`<input name="${n}" type="${ty}" ${n==='pin'?'maxlength="4" inputmode="numeric"':''} ${ty==='number'?'step="0.01" min="0.01"':''} ${n==='note'?'':'required'}>`)).join('')+'<button class="main">تأكيد</button><button type="button" class="link" id="cancel">إلغاء</button>';
+  $('cancel').onclick=()=>$('modal').classList.remove('on');
+  const cs0=$('mf').querySelector('[name=cur]');if(cs0)cs0.value=ACTIVE;
+  if(d.path==='exchange'){const fr=$('mf').querySelector('[name=from]'),to=$('mf').querySelector('[name=to]'),am=$('mf').querySelector('[name=amount]');fr.value=ACTIVE;to.value=ACTIVE==='USD'?'EUR':'USD';
+    const hint=document.createElement('div');hint.className='rate';am.after(hint);
+    const upd=()=>{const a=parseFloat(am.value)||0;hint.textContent=fr.value===to.value?'':`1 ${fr.value} = ${conv(1,fr.value,to.value).toFixed(4)} ${to.value}`+(a?` · ستحصل على ${fmt(conv(a,fr.value,to.value))} ${to.value}`:'')+' (أسعار استرشادية)'};
+    [fr,to,am].forEach(x=>x.oninput=upd);upd()}
+  if(d.f.some(x=>x[0]==='to_phone')){const cs=await api('contacts');if(cs.length){const ph=$('mf').querySelector('[name=to_phone]');const sel=document.createElement('select');sel.innerHTML='<option value="">اختر من المستفيدين المحفوظين</option>'+cs.map(c=>`<option value="${esc(c.phone)}">${esc(c.name)} · ${esc(c.phone)}</option>`).join('');sel.onchange=()=>{if(sel.value)ph.value=sel.value};ph.before(sel)}}
+  $('mf').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries(new FormData($('mf')));
+    if(o.amount!==undefined)o.amount=parseFloat(o.amount);
+    try{await api(d.path,o);$('modal').classList.remove('on');toast('تمت العملية بنجاح ✓');load()}catch(x){$('merr').textContent=x.message}};
+  $('modal').classList.add('on');
+});
+$('modal').onclick=e=>{if(e.target===$('modal'))$('modal').classList.remove('on')};
+token=DB.session?'local':null;show();
+</script>
